@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Mansplaining">
+    <meta name="author" content="Nik Kalyani @techbubble">
+    <link rel="icon" href="favicon.png">
+
+    <title>Mansplain Us</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Bangers" rel="stylesheet"> 
+  </head>
+
+  <body>
+    <div class="jumbotron" style="padding:0">
+      <div class="container">
+        <canvas id="editor" width="1200" height="630"></canvas>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-2">
+          <h4>Dazed</h4>
+          <textarea id="woman1"></textarea>
+        </div>
+        <div class="col-md-2">
+            <h4>Stunned</h4>
+            <textarea id="woman2"></textarea>
+        </div>
+        <div class="col-md-2">
+                <h4>Stupefied</h4>
+                <textarea id="woman3"></textarea>
+        </div>
+        <div class="col-md-2">
+                <h4>Appalled</h4>
+                <textarea id="woman4"></textarea>
+        </div>
+        <div class="col-md-2">
+                <h4>Disgusted</h4>
+                <textarea id="woman5"></textarea>
+        </div>
+        <div class="col-md-2">
+                <h4>Oblivious</h4>
+                <textarea id="man"></textarea>
+        </div>
+
+      </div>
+      
+      <hr>
+      <div class="row">
+          <div class="col-md-12" style="text-align: center;">
+                <button class="btn btn-huge btn-primary" id="download">Download</button>
+                <button class="btn btn-huge btn-primary" id="tweet">Tweet</button>
+                <br /><br />
+                <a href="https://twitter.com/techbubble?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @techbubble</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+          </div>
+      </div>
+
+    </div> <!-- /container -->
+    <style>
+        h4 { font-family: Bangers; font-size: 30px; color: #000; }
+        textarea {
+            width: 100%;
+            height: 90px;
+        }
+        .btn-huge { font-size: 3em; margin-left: 20px;}
+    </style>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"  crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/oauth-io/0.6.2/oauth.min.js"></script>
+    <script>
+
+        let canvas = null;
+        let context = null;
+
+        function showText(x, y, text) {
+            let lineheight = 30;
+            let lines = text.split('\n');
+            for (var i = 0; i<lines.length; i++) {
+                context.fillText(lines[i], x, y + (i*lineheight) );                        
+            }
+        }
+
+        function redraw() {
+            canvas = document.getElementById("editor");
+            context = canvas.getContext('2d');
+            base_image = new Image();
+            base_image.src = 'mansplaining.png';
+            base_image.onload = function(){
+                context.drawImage(base_image, 0, 0);
+                context.font = '28px Bangers';
+                context.textAlign = 'center';
+                showText(220, 60, $('#woman1').val());
+                showText(600, 60, $('#woman2').val());
+                showText(945, 60, $('#woman3').val());
+                showText(700, 310, $('#woman4').val());
+                showText(1068, 235, $('#woman5').val());
+                showText(430, 290, $('#man').val());
+            }                    
+                    
+        }
+
+
+        function postCanvasToURL() {
+            // Convert canvas image to Base64
+            var img = canvas.toDataURL();
+            $('#tweet').text("Please wait...");
+
+
+            img = img.replace("data:image/png;base64,", "");
+            let imgurTitle = 'Mansplain.us';
+
+            $.ajax({ 
+                url: 'https://api.imgur.com/3/image',
+                headers: {'Authorization': 'Client-ID 810dd7254da1967'},
+                type: 'POST',
+                data: {'image': img, 'type': 'base64', 'title': imgurTitle},
+                success: function(result) { 
+                NEWIMAGEURL = result.data.link;
+                $('#tweet').text("Tweet");
+                location.href = "https://twitter.com/share?url=" + NEWIMAGEURL + "&techbubble&hashtags=mansplaining&text=";
+            },
+            error: function () {
+                console.log('error');
+                }
+            });
+        }
+
+
+        $(document).ready(function() {
+
+            $('#download').on('click', function() {
+                window.open(canvas.toDataURL("image/png"));
+            });
+
+
+            // Initialize OAuth with key
+            OAuth.initialize("jNI9vF4TZKLBR3Cv0BgTg6oUwIY");
+
+
+            $('#tweet').on('click', function() {
+                postCanvasToURL();
+            })
+            $('textarea').on('keyup', function() { redraw(); });
+            $('#woman1').val('I got a PHd\nin Computer Science\nfor this?')
+            $('#woman2').val('\nEvanesco!!!');
+            $('#woman3').val('Does he know\nPornHub is open\non another tab?');
+            $('#woman4').val('I wonder if\nI should tell him?\nNah!');
+            $('#woman5').val('If I concentrate\nhard, can I make\nhis head explode');
+            $('#man').val('Windows uses a\nRecycle Bin and is\nmore eco friendly\nthan mac');
+            setTimeout(function(){
+                redraw();
+            }, 500);
+        });
+
+
+
+    
+    </script>
+</body>
+</html>
